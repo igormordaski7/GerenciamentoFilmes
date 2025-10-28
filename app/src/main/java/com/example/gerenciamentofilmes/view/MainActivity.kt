@@ -14,7 +14,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.gerenciamentofilmes.viewmodel.FilmeViewModel
 
 class MainActivity : ComponentActivity() {
@@ -35,11 +34,12 @@ fun MainScreen() {
     var textoBotao by remember { mutableStateOf("Salvar") }
     var modoEditar by remember { mutableStateOf(false) }
 
-    val filmeViewModel: FilmeViewModel = viewModel()
-    var listaFilmes by filmeViewModel.listaFilmes
     val context = LocalContext.current
-    val focusManager = LocalFocusManager.current
+    // Agora o ViewModel recebe o contexto, necessário para salvar e carregar os dados
+    val filmeViewModel: FilmeViewModel = remember { FilmeViewModel(context) }
+    var listaFilmes by filmeViewModel.listaFilmes
 
+    val focusManager = LocalFocusManager.current
     var mostrarCaixaDialogo by remember { mutableStateOf(false) }
 
     if (mostrarCaixaDialogo) {
@@ -78,20 +78,23 @@ fun MainScreen() {
 
         Spacer(modifier = Modifier.height(15.dp))
 
-        Button(modifier = Modifier.fillMaxWidth(), onClick = {
-            val retorno = if (modoEditar) {
-                modoEditar = false
-                textoBotao = "Salvar"
-                filmeViewModel.atualizarFilme(id, titulo, diretor)
-            } else {
-                filmeViewModel.salvarFilme(titulo, diretor)
-            }
+        Button(
+            modifier = Modifier.fillMaxWidth(),
+            onClick = {
+                val retorno = if (modoEditar) {
+                    modoEditar = false
+                    textoBotao = "Salvar"
+                    filmeViewModel.atualizarFilme(id, titulo, diretor)
+                } else {
+                    filmeViewModel.salvarFilme(titulo, diretor)
+                }
 
-            Toast.makeText(context, retorno, Toast.LENGTH_LONG).show()
-            titulo = ""
-            diretor = ""
-            focusManager.clearFocus()
-        }) {
+                Toast.makeText(context, retorno, Toast.LENGTH_LONG).show()
+                titulo = ""
+                diretor = ""
+                focusManager.clearFocus()
+            }
+        ) {
             Text(text = textoBotao)
         }
 
